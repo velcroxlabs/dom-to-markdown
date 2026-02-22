@@ -1,0 +1,48 @@
+{
+  "name": "@openclaw/dom-to-markdown",
+  "version": "1.0.0",
+  "description": "Convert web pages to clean markdown using OpenClaw's browser",
+  "main": "src/converter.js",
+  "scripts": {
+    "test": "node tests/integration.js",
+    "example": "node examples/basic-usage.js"
+  },
+  "keywords": [
+    "openclaw",
+    "markdown",
+    "browser",
+    "scraping",
+    "conversion",
+    "html",
+    "dom"
+  ],
+  "author": "OpenClaw Community",
+  "license": "MIT",
+  "dependencies": {
+    "turndown": "^7.1.2"
+  },
+  "peerDependencies": {
+    "openclaw": ">=2026.2.13"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/openclaw/skills.git",
+    "directory": "dom-to-markdown"
+  },
+  "bugs": {
+    "url": "https://github.com/openclaw/skills/issues"
+  },
+  "homepage": "https://docs.openclaw.ai/skills/dom-to-markdown",
+  "openclaw": {
+    "skill": true,
+    "category": "web",
+    "tags": ["browser", "markdown", "conversion", "scraping"],
+    "compatibility": {
+      "browser": "required",
+      "tools": ["browser", "web_fetch"]
+    }
+  }
+}
