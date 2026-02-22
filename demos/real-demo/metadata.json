@@ -1,0 +1,9 @@
+{
+  "url": "https://www.diariolibre.com/",
+  "extractionMethod": "openclaw-browser",
+  "htmlLength": 5297,
+  "markdownLength": 55,
+  "compressionRatio": "99.0%",
+  "timestamp": "2026-02-21T23:59:48.756Z",
+  "outputPath": "/home/jarvis/.openclaw/workspace/skills/dom-to-markdown/exports/real-demo/diariolibre-real-conversion.md"
+}
