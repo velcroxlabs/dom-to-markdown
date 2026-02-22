@@ -108,6 +108,37 @@ const results = await batchConvert([
 });
 ```
 
+### 🤖 Natural Language Integration
+
+OpenClaw agents can automatically use this skill when you ask in plain language:
+
+**Example conversation:**
+```
+User: "Convert https://openclaw.ai to markdown for me"
+Agent: "I'll extract that page to markdown for you..."
+*Agent automatically calls the dom-to-markdown skill*
+✅ Result: Markdown extracted and saved to `exports/dom-markdown/2026-02-22/openclaw.ai/homepage.md`
+```
+
+**How it works:**
+1. The agent detects URLs and conversion requests in your messages
+2. It automatically loads and executes the `dom-to-markdown` skill
+3. Results are saved to organized directories
+4. You receive confirmation with the output location
+
+**Supported natural language patterns:**
+- "Convert [URL] to markdown"
+- "Extract the content from [URL]"
+- "Save [website] as markdown"
+- "Get the text from [page] in markdown format"
+
+The agent handles:
+- ✅ Automatic skill detection and loading
+- ✅ URL extraction from your message
+- ✅ Optimal extraction method selection
+- ✅ Organized file storage
+- ✅ Progress feedback and completion notification
+
 ### Integration in OpenClaw Agent
 
 ```javascript
