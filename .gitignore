@@ -1,0 +1,53 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Demo outputs and internal documentation
+internal-docs/
+demos/
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test coverage
+coverage/
+.nyc_output
+
+# Logs
+logs/
+*.log
+
+# Temporary files
+tmp/
+temp/
+
+# Build outputs
+dist/
+build/
+*.min.js
+*.min.css
+
+# Exported content (user-generated)
+exports/
+output/
+
+# Specific to this skill
+*.html  # raw HTML dumps
+*-full-html.html
+*-converted.md
