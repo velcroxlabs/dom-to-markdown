@@ -43,6 +43,16 @@ This skill is automatically available when placed in your workspace skills direc
 ~/.openclaw/workspace/skills/dom-to-markdown/
 ```
 
+### Skill Invocation (Slash Command)
+
+If `user-invocable: true` (default), you can invoke this skill directly via slash command in supported channels:
+
+```
+/skill dom-to-markdown convert https://docs.openclaw.ai/
+```
+
+The skill will automatically detect the page type and choose the optimal extraction method.
+
 ## 📖 Usage
 
 ### Basic Conversion

@@ -39,13 +39,14 @@ class OpenClawBrowserWrapper {
     }
     
     try {
+      // Try with configured profile
       const status = await browser({
         action: 'status',
         profile: this.options.profile
       });
       
       if (this.options.debug) {
-        console.log(`Browser status: ${JSON.stringify(status)}`);
+        console.log(`Browser status (profile: ${this.options.profile}): ${JSON.stringify(status)}`);
       }
       
       // Check if browser is running
@@ -57,7 +58,7 @@ class OpenClawBrowserWrapper {
       
       if (!isRunning) {
         if (this.options.debug) {
-          console.log('Starting OpenClaw browser...');
+          console.log(`Starting OpenClaw browser with profile: ${this.options.profile}...`);
         }
         
         await browser({
@@ -81,7 +82,44 @@ class OpenClawBrowserWrapper {
       
       return true;
     } catch (error) {
-      throw new Error(`Failed to ensure browser running: ${error.message}`);
+      // Fallback: try without profile (default profile)
+      if (this.options.debug) {
+        console.log(`Failed with profile ${this.options.profile}, trying default profile: ${error.message}`);
+      }
+      
+      try {
+        const status = await browser({
+          action: 'status'
+        });
+        
+        if (this.options.debug) {
+          console.log(`Browser status (default profile): ${JSON.stringify(status)}`);
+        }
+        
+        const isRunning = status && (
+          status.includes('running') || 
+          status.includes('ready') ||
+          (typeof status === 'object' && status.running)
+        );
+        
+        if (!isRunning) {
+          if (this.options.debug) {
+            console.log('Starting OpenClaw browser with default profile...');
+          }
+          
+          await browser({
+            action: 'start'
+          });
+          
+          await new Promise(resolve => setTimeout(resolve, 3000));
+        }
+        
+        // Update profile to default (empty string) for subsequent calls
+        this.options.profile = '';
+        return true;
+      } catch (fallbackError) {
+        throw new Error(`Failed to ensure browser running: ${error.message}; fallback also failed: ${fallbackError.message}`);
+      }
     }
   }
   
@@ -96,23 +134,29 @@ class OpenClawBrowserWrapper {
     }
     
     try {
-      // Navigate
-      await browser({
+      // Navigate - build options with profile only if set
+      const navOptions = {
         action: 'navigate',
-        profile: this.options.profile,
         targetUrl: url
-      });
+      };
+      if (this.options.profile) {
+        navOptions.profile = this.options.profile;
+      }
+      await browser(navOptions);
       
       // Wait for load state
       if (this.options.waitForLoad) {
-        await browser({
+        const waitOptions = {
           action: 'act',
-          profile: this.options.profile,
           request: {
             kind: 'wait',
             timeMs: this.options.waitTime
           }
-        });
+        };
+        if (this.options.profile) {
+          waitOptions.profile = this.options.profile;
+        }
+        await browser(waitOptions);
         
         // Additional wait for JavaScript if specified
         if (this.options.waitTime > 0) {
@@ -139,14 +183,17 @@ class OpenClawBrowserWrapper {
       }
       
       // Method 1: Try to get full HTML
-      const htmlResult = await browser({
+      const evaluateOptions = {
         action: 'act',
-        profile: this.options.profile,
         request: {
           kind: 'evaluate',
           fn: '() => document.documentElement.outerHTML'
         }
-      });
+      };
+      if (this.options.profile) {
+        evaluateOptions.profile = this.options.profile;
+      }
+      const htmlResult = await browser(evaluateOptions);
       
       if (htmlResult && htmlResult.length > 100) {
         if (this.options.debug) {
@@ -160,12 +207,15 @@ class OpenClawBrowserWrapper {
         console.log('HTML too short, trying snapshot...');
       }
       
-      const snapshot = await browser({
+      const snapshotOptions = {
         action: 'snapshot',
-        profile: this.options.profile,
         snapshotFormat: 'ai',
         maxChars: 100000
-      });
+      };
+      if (this.options.profile) {
+        snapshotOptions.profile = this.options.profile;
+      }
+      const snapshot = await browser(snapshotOptions);
       
       // Convert snapshot to basic HTML
       const basicHtml = this.convertSnapshotToHtml(snapshot);
@@ -181,26 +231,32 @@ class OpenClawBrowserWrapper {
    */
   async extractText() {
     try {
-      const textResult = await browser({
+      const evaluateOptions = {
         action: 'act',
-        profile: this.options.profile,
         request: {
           kind: 'evaluate',
           fn: '() => document.body.innerText || document.body.textContent'
         }
-      });
+      };
+      if (this.options.profile) {
+        evaluateOptions.profile = this.options.profile;
+      }
+      const textResult = await browser(evaluateOptions);
       
       if (textResult && textResult.length > 10) {
         return textResult;
       }
       
       // Fallback: extract from snapshot
-      const snapshot = await browser({
+      const snapshotOptions = {
         action: 'snapshot',
-        profile: this.options.profile,
         snapshotFormat: 'ai',
         maxChars: 100000
-      });
+      };
+      if (this.options.profile) {
+        snapshotOptions.profile = this.options.profile;
+      }
+      const snapshot = await browser(snapshotOptions);
       
       const lines = snapshot.split('\n');
       return lines
@@ -218,11 +274,14 @@ class OpenClawBrowserWrapper {
    */
   async takeScreenshot() {
     try {
-      const screenshotResult = await browser({
+      const screenshotOptions = {
         action: 'screenshot',
-        profile: this.options.profile,
         type: 'png'
-      });
+      };
+      if (this.options.profile) {
+        screenshotOptions.profile = this.options.profile;
+      }
+      const screenshotResult = await browser(screenshotOptions);
       
       // screenshotResult should contain MEDIA: path
       return screenshotResult;
@@ -278,10 +337,13 @@ class OpenClawBrowserWrapper {
    */
   async closeBrowser() {
     try {
-      await browser({
-        action: 'stop',
-        profile: this.options.profile
-      });
+      const stopOptions = {
+        action: 'stop'
+      };
+      if (this.options.profile) {
+        stopOptions.profile = this.options.profile;
+      }
+      await browser(stopOptions);
       
       if (this.options.debug) {
         console.log('Browser closed');
