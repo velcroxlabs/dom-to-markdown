@@ -381,7 +381,7 @@ Convertir cualquier página web a markdown limpio y estructurado, detectando aut
 - **#4**: Soporte para extracción incremental (solo contenido nuevo)
 
 ### Workarounds Actuales
-- Para páginas mixtas: usar modo híbrido (`useBrowserHeadless: true, useWebFetch: true`)
+- Para páginas mixtas: usar modo híbrido (`usePlaywright: true, useWebFetch: true`)
 - Para tiempos de carga largos: aumentar `waitTime` a 8000-10000ms
 - Para anti-bot: usar `profile: 'chrome'` con sesión de usuario real
 
@@ -389,9 +389,9 @@ Convertir cualquier página web a markdown limpio y estructurado, detectando aut
 
 Usamos [Semantic Versioning](https://semver.org/) (SemVer) para versionado.
 
-### Versión Actual: v1.1.0
+### Versión Actual: v1.3.0
 - **1** (Major): API estable, cambios breaking serán mayor
-- **1** (Minor): Nuevas características compatibles (cache system)
+- **3** (Minor): Nuevas características compatibles (Playwright integration, cache system)
 - **0** (Patch): Correcciones de bugs
 
 ### Historial de Versiones
