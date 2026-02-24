@@ -9,23 +9,37 @@ const path = require('path');
 const TurndownService = require('turndown');
 const { PageTypeDetector } = require('./detector');
 const { OpenClawBrowserWrapper } = require('./browser-wrapper');
+const PlaywrightWrapper = require('./playwright-wrapper');
 const CacheStore = require('./cache-store');
 
 class DomToMarkdownConverter {
   constructor(options = {}) {
     this.options = {
       // Methods
-      useBrowserHeadless: options.useBrowserHeadless !== false,
-      useWebFetch: options.useWebFetch !== false,
+      usePlaywright: options.usePlaywright !== false,           // Use Playwright for SPAs (default if installed)
+      useWebFetch: options.useWebFetch !== false,               // Use web_fetch for static pages
+      useOpenClawBrowser: options.useOpenClawBrowser || false,  // Only as fallback (not recommended due to known issues)
       useFirecrawl: options.useFirecrawl || false,
       
-      // Browser settings
+      // Playwright settings (when usePlaywright = true)
+      playwrightBrowser: options.playwrightBrowser || 'chromium', // 'chromium' | 'firefox' | 'webkit'
+      playwrightHeadless: options.playwrightHeadless !== false,
+      playwrightWaitUntil: options.playwrightWaitUntil || 'networkidle',
+      playwrightTimeout: options.playwrightTimeout || 30000,
+      playwrightRemoveElements: options.playwrightRemoveElements || [
+        'script', 'style', 'noscript', 'iframe', 'svg',
+        'nav', 'footer', 'header', 'aside'
+      ],
+      playwrightWaitTime: options.playwrightWaitTime || 2000,  // Additional wait for JavaScript
+      
+      // OpenClaw browser settings (when useOpenClawBrowser = true)
       headless: options.headless !== false,
       waitTime: options.waitTime || 5000,
       profile: options.profile || 'openclaw',
       
       // Conversion
-      removeElements: options.removeElements || ['nav', 'footer', 'aside', 'script', 'style', 'iframe', 'noscript'],
+      rawHtml: options.rawHtml || false,  // If true, saves raw HTML and disables cleaning
+      removeElements: options.rawHtml ? [] : (options.removeElements || ['nav', 'footer', 'aside', 'script', 'style', 'iframe', 'noscript']),
       preserveStructure: options.preserveStructure !== false,
       
       // Output
@@ -42,6 +56,11 @@ class DomToMarkdownConverter {
       debug: options.debug || false,
       timeout: options.timeout || 60
     };
+    
+    // Backward compatibility: map useBrowserHeadless to useOpenClawBrowser
+    if (options.useBrowserHeadless !== undefined && this.options.useOpenClawBrowser === undefined) {
+      this.options.useOpenClawBrowser = options.useBrowserHeadless;
+    }
     
     this.detector = new PageTypeDetector({ debug: this.options.debug });
     this.turndownService = this.createTurndownService();
@@ -73,6 +92,33 @@ class DomToMarkdownConverter {
   }
   
   /**
+   * Check if Playwright is available (silent check)
+   */
+  isPlaywrightAvailable() {
+    try {
+      require('playwright');
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+  
+  /**
+   * Ensure Playwright is available, throw clear error if not
+   */
+  ensurePlaywrightAvailable() {
+    if (!this.isPlaywrightAvailable()) {
+      throw new Error(
+        'Playwright no está instalado. Para extraer contenido de SPAs (React, Vue, etc.), ' +
+        'debes instalar las dependencias:\n' +
+        '  cd /home/jarvis/.openclaw/workspace/skills/dom-to-markdown\n' +
+        '  npm install\n' +
+        'Esto instalará Playwright y Chromium automáticamente (~150 MB).'
+      );
+    }
+  }
+  
+  /**
    * Create configured TurndownService instance
    */
   createTurndownService() {
@@ -87,10 +133,13 @@ class DomToMarkdownConverter {
     });
     
     // Add custom rules
-    turndownService.addRule('removeNoise', {
-      filter: this.options.removeElements,
-      replacement: () => ''
-    });
+    // Only add removeNoise rule if we have elements to remove (not in rawHtml mode)
+    if (this.options.removeElements && this.options.removeElements.length > 0) {
+      turndownService.addRule('removeNoise', {
+        filter: this.options.removeElements,
+        replacement: () => ''
+      });
+    }
     
     turndownService.addRule('preserveImages', {
       filter: 'img',
@@ -215,7 +264,7 @@ class DomToMarkdownConverter {
   /**
    * Save result to file
    */
-  saveResult(url, markdown, metadata) {
+  saveResult(url, markdown, metadata, rawHtml = null) {
     if (!this.options.saveToFile) {
       return null;
     }
@@ -246,16 +295,30 @@ class DomToMarkdownConverter {
       // Save markdown
       fs.writeFileSync(filePath, markdown);
       
-      // Save metadata
+      // Prepare metadata
       const metadataPath = path.join(outputDir, 'metadata.json');
-      const allMetadata = {
-        [filename]: {
-          url,
-          timestamp: timestamp.toISOString(),
-          markdownLength: markdown.length,
-          ...metadata
-        }
+      const allMetadata = {};
+      const fileMetadata = {
+        url,
+        timestamp: timestamp.toISOString(),
+        markdownLength: markdown.length,
+        ...metadata
       };
+      
+      // Save raw HTML if requested
+      let rawHtmlPath = null;
+      if (this.options.rawHtml && rawHtml && rawHtml.length > 0) {
+        const rawFilename = `${pathname}.raw.html`;
+        rawHtmlPath = path.join(outputDir, rawFilename);
+        fs.writeFileSync(rawHtmlPath, rawHtml);
+        this.log(`Raw HTML saved to: ${rawHtmlPath} (${rawHtml.length} bytes)`);
+        
+        // Add raw HTML info to metadata
+        fileMetadata.rawHtmlPath = rawHtmlPath;
+        fileMetadata.rawHtmlLength = rawHtml.length;
+      }
+      
+      allMetadata[filename] = fileMetadata;
       
       // Append to existing metadata or create new
       if (fs.existsSync(metadataPath)) {
@@ -334,6 +397,57 @@ class DomToMarkdownConverter {
       return await this.extractWithWebFetch(url);
     }
   }
+  /**
+   * Extract content using Playwright
+   */
+  async extractWithPlaywright(url, suggestion) {
+    this.log(`Using Playwright for ${url}`);
+    
+    try {
+      // Ensure Playwright is available
+      this.ensurePlaywrightAvailable();
+      
+      const playwrightWrapper = new PlaywrightWrapper({
+        browserType: this.options.playwrightBrowser,
+        headless: this.options.playwrightHeadless,
+        waitUntil: this.options.playwrightWaitUntil,
+        timeout: this.options.playwrightTimeout,
+        waitTime: this.options.playwrightWaitTime,
+        removeElements: this.options.playwrightRemoveElements,
+        debug: this.options.debug
+      });
+      
+      const result = await playwrightWrapper.extractFromUrl(url, {
+        saveRawHtml: this.options.rawHtml
+      });
+      
+      if (!result.success) {
+        throw new Error(`Playwright extraction failed: ${result.error}`);
+      }
+      
+      return {
+        method: 'playwright',
+        html: result.html,
+        raw: result.html,
+        length: result.html.length,
+        metadata: result.metadata,
+        savedFiles: result.savedFiles,
+        simulated: false
+      };
+      
+    } catch (error) {
+      this.log(`Playwright extraction error: ${error.message}`);
+      
+      // Fallback to OpenClaw browser if enabled
+      if (this.options.useOpenClawBrowser) {
+        this.log('Falling back to OpenClaw browser...');
+        return await this.extractWithBrowserHeadless(url, suggestion);
+      }
+      
+      // Final fallback to web_fetch
+      return await this.extractWithWebFetch(url);
+    }
+  }
   
   /**
    * Main method: convert URL to markdown
@@ -408,16 +522,28 @@ class DomToMarkdownConverter {
       // 3. Extract content
       let content;
       
-      if (methodSuggestion.method === 'browser_headless' && options.useBrowserHeadless) {
+      // Map legacy option for compatibility
+      if (options.useBrowserHeadless !== undefined && options.useOpenClawBrowser === undefined) {
+        options.useOpenClawBrowser = options.useBrowserHeadless;
+      }
+      
+      // Priority: playwright > web_fetch > openclaw-browser
+      if (methodSuggestion.method === 'playwright' && options.usePlaywright) {
+        content = await this.extractWithPlaywright(url, methodSuggestion);
+      } else if (methodSuggestion.method === 'browser_headless' && options.useOpenClawBrowser) {
         content = await this.extractWithBrowserHeadless(url, methodSuggestion);
       } else if (methodSuggestion.method === 'web_fetch' && options.useWebFetch) {
         content = await this.extractWithWebFetch(url);
       } else {
-        // Hybrid or fallback
-        if (options.useBrowserHeadless) {
+        // Hybrid or fallback - try in order of preference
+        if (options.usePlaywright) {
+          content = await this.extractWithPlaywright(url, methodSuggestion);
+        } else if (options.useWebFetch) {
+          content = await this.extractWithWebFetch(url);
+        } else if (options.useOpenClawBrowser) {
           content = await this.extractWithBrowserHeadless(url, methodSuggestion);
         } else {
-          content = await this.extractWithWebFetch(url);
+          throw new Error('No extraction method enabled (usePlaywright, useWebFetch, or useOpenClawBrowser must be true)');
         }
       }
       
@@ -434,7 +560,7 @@ class DomToMarkdownConverter {
           frameworks: classification.frameworks,
           method: content.method,
           extractionMetadata: content.metadata
-        });
+        }, content.html);
         
         if (savedPath) {
           this.log(`Saved to: ${savedPath}`);

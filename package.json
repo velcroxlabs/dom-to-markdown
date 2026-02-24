@@ -1,10 +1,12 @@
 {
   "name": "@openclaw/dom-to-markdown",
-  "version": "1.0.0",
+  "version": "1.3.0",
   "description": "Convert web pages to clean markdown using OpenClaw's browser",
   "main": "src/converter.js",
   "scripts": {
     "test": "node tests/integration.js",
+    "test:playwright": "node tests/playwright-smoke.js",
+    "test:all": "npm test && npm run test:playwright",
     "example": "node examples/basic-usage.js"
   },
   "keywords": [
@@ -19,7 +21,8 @@
   "author": "OpenClaw Community",
   "license": "MIT",
   "dependencies": {
-    "turndown": "^7.1.2"
+    "turndown": "^7.1.2",
+    "playwright": "^1.40.0"
   },
   "peerDependencies": {
     "openclaw": ">=2026.2.13"

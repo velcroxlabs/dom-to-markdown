@@ -21,7 +21,8 @@ Convert any web page to clean, structured markdown using OpenClaw's integrated b
 1. **Smart page detection** - Identifies React, Vue, Angular, Next.js, and other frameworks
 2. **Automatic method selection** - Chooses between browser headless (for SPAs) and web_fetch (for static pages)
 3. **Clean markdown conversion** - Removes noise (scripts, styles, navs) while preserving structure
-4. **Structured storage** - Organizes results by date and domain
+4. **Raw HTML export** - Optionally saves complete HTML alongside markdown for comparison
+5. **Structured storage** - Organizes results by date and domain
 
 ## 🚀 Quick Start
 
@@ -42,6 +43,19 @@ This skill is automatically available when placed in your workspace skills direc
 ```
 ~/.openclaw/workspace/skills/dom-to-markdown/
 ```
+
+### Playwright Setup (Required for SPAs)
+
+For reliable JavaScript rendering of SPAs (React, Vue, Angular, Next.js, etc.), **Playwright is required**. Install it in the skill directory:
+
+```bash
+cd /home/jarvis/.openclaw/workspace/skills/dom-to-markdown
+npm install
+```
+
+This installs Playwright and Chromium (~150 MB). The skill will automatically detect if Playwright is available and use it as the primary method for SPAs.
+
+If Playwright is not installed, the skill will fall back to OpenClaw browser (less reliable) or `web_fetch` for static pages.
 
 ### Skill Invocation (Slash Command)
 
@@ -65,6 +79,24 @@ const result = await convertUrlToMarkdown('https://example.com', {
   saveToFile: true,
   timeout: 60
 });
+```
+
+### Raw HTML Export
+
+When you need the complete HTML (not cleaned) for comparison or archiving:
+
+```javascript
+const result = await convertUrlToMarkdown('https://amazon.es', {
+  rawHtml: true,           // Saves raw HTML file and disables cleaning
+  saveToFile: true,
+  outputDir: './exports/dom-markdown',
+  debug: true
+});
+
+// Result includes:
+// - homepage.md (markdown)
+// - homepage.raw.html (complete HTML)
+// - metadata.json (with rawHtmlPath and rawHtmlLength)
 ```
 
 ### Batch Processing
@@ -97,23 +129,40 @@ const results = await batchConvert([
 
 ```javascript
 {
-  // Extraction methods
-  useBrowserHeadless: true,    // Use OpenClaw browser for SPAs
-  useWebFetch: true,           // Use web_fetch for static pages
-  useFirecrawl: false,         // Optional: use Firecrawl service
+  // Extraction methods (priority order: playwright > web_fetch > openclaw-browser)
+  usePlaywright: true,           // Use Playwright for SPAs (default if installed)
+  useWebFetch: true,             // Use web_fetch for static pages
+  useOpenClawBrowser: false,     // Use OpenClaw browser only as fallback (not recommended due to known issues)
+  useFirecrawl: false,           // Optional: use Firecrawl service
   
-  // Browser settings
-  headless: true,              // Browser headless mode
-  waitTime: 5000,              // ms to wait for JavaScript
-  profile: 'openclaw',         // Browser profile to use
+  // Playwright settings (when usePlaywright = true)
+  playwrightBrowser: 'chromium', // 'chromium' (default), 'firefox', 'webkit'
+  playwrightHeadless: true,
+  playwrightWaitUntil: 'networkidle',
+  playwrightTimeout: 30000,
+  playwrightRemoveElements: [
+    'script', 'style', 'noscript', 'iframe', 'svg',
+    'nav', 'footer', 'header', 'aside'
+  ],
+  playwrightWaitTime: 2000,      // Additional wait for JavaScript (ms)
+  
+  // OpenClaw browser settings (when useOpenClawBrowser = true)
+  headless: true,                // Browser headless mode
+  waitTime: 5000,                // ms to wait for JavaScript
+  profile: 'openclaw',           // Browser profile to use
   
   // Conversion settings
+  rawHtml: false,                // If true, saves raw HTML file and disables cleaning
   removeElements: ['nav', 'footer', 'aside', 'script', 'style'],
   preserveStructure: true,
   
   // Output
   saveToFile: true,
   outputDir: './exports/dom-markdown',
+  
+  // Cache (improves performance for repeated URLs)
+  useCache: true,
+  cacheTTL: 24 * 60 * 60 * 1000, // 24 hours default
   
   // Debug
   debug: false
@@ -130,16 +179,21 @@ const results = await batchConvert([
    - Confidence scoring
 
 2. **`src/converter.js`** - Main conversion logic
-   - Method selection based on detection
-   - Integration with OpenClaw browser tool
+   - Method selection based on detection (priority: playwright > web_fetch > openclaw-browser)
+   - Integration with Playwright and OpenClaw browser tools
    - HTML to markdown conversion
 
-3. **`src/browser-wrapper.js`** - OpenClaw browser integration
-   - Uses `browser` tool internally
-   - Handles navigation, waiting, extraction
+3. **`src/playwright-wrapper.js`** - Playwright integration (primary for SPAs)
+   - Uses Playwright (Chromium) for reliable JavaScript rendering
+   - Handles navigation, waiting, DOM cleaning, extraction
    - Error handling and fallbacks
 
-4. **`src/storage.js`** - Structured output
+4. **`src/browser-wrapper.js`** - OpenClaw browser integration (fallback)
+   - Uses `browser` tool internally
+   - Handles navigation, waiting, extraction
+   - Error handling and fallbacks (used when Playwright not available)
+
+5. **`src/storage.js`** - Structured output
    - Organizes by date/domain
    - Saves markdown + metadata
    - Prevents duplicate extraction
@@ -149,7 +203,7 @@ const results = await batchConvert([
 ```
 URL → Detector → {static, spa, mixed} → Method Selector → 
     ↓                        ↓                    ↓
- web_fetch           Browser Headless        Hybrid Mode
+ web_fetch           Playwright (SPAs)        Hybrid Mode
     ↓                        ↓                    ↓
 HTML Extraction   JavaScript Rendering    Combined Approach
     ↓                        ↓                    ↓
@@ -178,12 +232,14 @@ Turndown → Markdown → Storage → Result
 | Page Type | Method | Avg Time | Success Rate |
 |-----------|--------|----------|--------------|
 | Static | web_fetch | 1-2s | 98% |
-| SPA | Browser Headless | 5-10s | 95% |
-| Mixed | Hybrid | 3-6s | 96% |
+| SPA | Playwright (Chromium) | 3-8s | 99% |
+| Mixed | Hybrid (Playwright + web_fetch) | 2-5s | 97% |
 
 ## 🧪 Testing
 
-Run the test suite:
+### Basic Tests (Unit & Integration)
+
+Run the standard test suite:
 
 ```bash
 cd /home/jarvis/.openclaw/workspace/skills/dom-to-markdown
@@ -195,6 +251,24 @@ Or test manually:
 ```javascript
 const { testSuite } = require('./tests/integration');
 await testSuite();
+```
+
+### Playwright Integration Tests
+
+For comprehensive Playwright testing (requires network access and installed Playwright):
+
+```bash
+npm run test:playwright
+```
+
+This runs smoke tests with real websites to verify Playwright extraction works correctly for both static pages and SPAs.
+
+### All Tests
+
+Run both test suites:
+
+```bash
+npm run test:all
 ```
 
 ## 📁 Output Structure

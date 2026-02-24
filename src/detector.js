@@ -7,7 +7,8 @@ class PageTypeDetector {
   constructor(options = {}) {
     this.options = {
       debug: options.debug || false,
-      minConfidence: options.minConfidence || 0.6
+      minConfidence: options.minConfidence || 0.8, // Increased to avoid false positives
+      minSpaConfidence: options.minSpaConfidence || 0.7
     };
     
     // Framework patterns
@@ -16,23 +17,27 @@ class PageTypeDetector {
         { pattern: /react/i, weight: 0.8 },
         { pattern: /react-dom/i, weight: 0.9 },
         { pattern: /__NEXT_DATA__/i, weight: 0.7 },
-        { pattern: /data-reactroot/i, weight: 0.8 }
+        { pattern: /data-reactroot/i, weight: 0.8 },
+        { pattern: /createElement\(/i, weight: 0.6 }
       ],
       vue: [
         { pattern: /vue/i, weight: 0.8 },
         { pattern: /__VUE__/i, weight: 0.9 },
         { pattern: /vue-router/i, weight: 0.7 },
-        { pattern: /v-[\w-]+/i, weight: 0.6 }
+        { pattern: /v-[\w-]+/i, weight: 0.6 },
+        { pattern: /@click\./i, weight: 0.5 }
       ],
       angular: [
         { pattern: /ng-[\w-]+/i, weight: 0.8 },
         { pattern: /angular/i, weight: 0.7 },
-        { pattern: /\[ng[\w-]+\]/i, weight: 0.6 }
+        { pattern: /\[ng[\w-]+\]/i, weight: 0.6 },
+        { pattern: /\(click\)=/i, weight: 0.5 }
       ],
       nextjs: [
         { pattern: /_next/i, weight: 0.9 },
         { pattern: /__NEXT_DATA__/i, weight: 1.0 },
-        { pattern: /next\/router/i, weight: 0.7 }
+        { pattern: /next\/router/i, weight: 0.7 },
+        { pattern: /next\/head/i, weight: 0.6 }
       ],
       nuxt: [
         { pattern: /_nuxt/i, weight: 0.9 },
@@ -43,6 +48,67 @@ class PageTypeDetector {
         { pattern: /svelte-\w+/i, weight: 0.7 }
       ]
     };
+    
+    // Known SPA domains (force SPA detection for these)
+    this.knownSpaDomains = [
+      /amazon\.(com|es|co\.uk|de|fr|it|ca|com\.mx)/i,
+      /mercadolibre\./i,
+      /netflix\./i,
+      /spotify\./i,
+      /twitter\./i,
+      /facebook\./i,
+      /instagram\./i,
+      /app\./i,
+      /dashboard\./i,
+      /admin\./i,
+      /console\./i,
+      /webapp\./i,
+      /singlepage\./i
+    ];
+    
+    // Static content domains (likely static)
+    this.staticDomains = [
+      /docs\./i,
+      /wiki\./i,
+      /blog\./i,
+      /news\./i,
+      /article\./i,
+      /documentation\./i,
+      /help\./i
+    ];
+  }
+  
+  /**
+   * Check if URL matches known SPA domains
+   */
+  isKnownSpaDomain(url) {
+    try {
+      const hostname = new URL(url).hostname.toLowerCase();
+      return this.knownSpaDomains.some(pattern => pattern.test(hostname));
+    } catch {
+      return false;
+    }
+  }
+  
+  /**
+   * Check if URL matches known static domains
+   */
+  isKnownStaticDomain(url) {
+    try {
+      const hostname = new URL(url).hostname.toLowerCase();
+      return this.staticDomains.some(pattern => pattern.test(hostname));
+    } catch {
+      return false;
+    }
+  }
+  
+  /**
+   * Log message if debug enabled
+   */
+  log(message) {
+    if (this.options.debug) {
+      console.log(`[PageTypeDetector] ${message}`);
+    }
   }
   
   /**
@@ -85,11 +151,15 @@ class PageTypeDetector {
   }
   
   /**
-   * Classify page type based on HTML and frameworks
+   * Classify page type based on HTML, frameworks, and URL
    */
-  classifyPage(html, frameworks = {}) {
+  classifyPage(html, frameworks = {}, url = '') {
     const htmlLength = html.length;
     const hasFrameworks = Object.keys(frameworks).length > 0;
+    
+    // Domain-based classification (strong signal)
+    const isKnownSpa = url && this.isKnownSpaDomain(url);
+    const isKnownStatic = url && this.isKnownStaticDomain(url);
     
     // Calculate SPA indicators
     let spaScore = 0;
@@ -133,6 +203,16 @@ class PageTypeDetector {
       if (condition) staticScore += weight;
     }
     
+    // Domain-based boosting (strong signal)
+    if (isKnownSpa) {
+      spaScore += 0.5;
+      this.log(`Known SPA domain boost: ${url}`);
+    }
+    if (isKnownStatic) {
+      staticScore += 0.5;
+      this.log(`Known static domain boost: ${url}`);
+    }
+    
     // Normalize scores
     spaScore = Math.min(spaScore, 1.0);
     staticScore = Math.min(staticScore, 1.0);
@@ -141,10 +221,10 @@ class PageTypeDetector {
     let type = 'mixed';
     let confidence = 0.5;
     
-    if (spaScore > 0.7 && spaScore > staticScore) {
+    if (spaScore > this.options.minSpaConfidence && spaScore > staticScore) {
       type = 'spa';
       confidence = spaScore;
-    } else if (staticScore > 0.7 && staticScore > spaScore) {
+    } else if (staticScore > this.options.minSpaConfidence && staticScore > spaScore) {
       type = 'static';
       confidence = staticScore;
     } else {
@@ -193,7 +273,7 @@ class PageTypeDetector {
       const frameworks = this.detectFrameworks(html, headers);
       
       // Classify page
-      const classification = this.classifyPage(html, frameworks);
+      const classification = this.classifyPage(html, frameworks, url);
       
       const duration = Date.now() - startTime;
       
@@ -260,14 +340,19 @@ class PageTypeDetector {
     let reason = 'Static page detected';
     let waitFor = 'load';
     
-    if (type === 'spa' && confidence >= this.options.minConfidence) {
-      method = 'browser_headless';
+    if (type === 'spa' && confidence >= this.options.minSpaConfidence) {
+      method = 'playwright';
       reason = `SPA detected (${Object.keys(frameworks).join(', ')})`;
       waitFor = 'networkidle';
-    } else if (type === 'mixed') {
-      method = 'hybrid';
-      reason = 'Mixed page type - try browser headless first';
+    } else if (type === 'mixed' && confidence >= this.options.minSpaConfidence) {
+      method = 'playwright';
+      reason = 'Mixed page type - using Playwright for reliable rendering';
       waitFor = 'networkidle';
+    } else if (type === 'mixed') {
+      // Low confidence mixed - prefer web_fetch but could fallback
+      method = 'web_fetch';
+      reason = 'Mixed page type with low confidence - trying web_fetch first';
+      waitFor = 'load';
     }
     
     return {
