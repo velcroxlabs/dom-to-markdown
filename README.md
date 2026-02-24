@@ -61,10 +61,33 @@ if (result.success) {
 - **Structure preservation**: Headings, lists, links, images
 - **Configurable rules**: Customize what to keep/remove
 
-### 💾 Organized Storage
-- **Date-based organization**: `YYYY-MM-DD/domain.com/`
-- **Metadata tracking**: Extraction details, timestamps, stats
-- **Avoids duplicates**: URL-based duplicate prevention
+### 📂 Output Structure
+
+The skill organizes extracted content in a consistent directory structure:
+
+```
+exports/dom-markdown/
+└── YYYY-MM-DD/                     # Date of extraction
+    └── domain.com/                 # Normalized domain (without www)
+        ├── page-name.md            # Clean markdown
+        ├── page-name.raw.html      # Raw HTML (if rawHtml: true)
+        └── metadata.json           # Extraction metadata (url, timestamp, method, stats)
+```
+
+**Example:**
+```
+exports/dom-markdown/
+└── 2026-02-24/
+    └── youtube.com/
+        ├── watch.md                # Markdown for https://www.youtube.com/watch?v=...
+        └── metadata.json           # { "url": "https://www.youtube.com/watch?v=...", ... }
+```
+
+**Metadata includes:**
+- URL, timestamp, extraction method (playwright/web_fetch/browser)
+- Markdown length, HTML length (if rawHtml)
+- Cache hit/miss, performance stats
+- Confidence scores for page detection
 
 ### 💨 Performance Cache
 - **Persistent JSON cache**: Prevents redundant URL processing
@@ -79,10 +102,19 @@ if (result.success) {
 ```javascript
 const converter = new DomToMarkdownConverter({
   // Methods
-  useBrowserHeadless: true,    // Use OpenClaw browser for SPAs
+  usePlaywright: true,         // Use Playwright for SPAs (primary method)
   useWebFetch: true,           // Use web_fetch for static pages
+  useOpenClawBrowser: false,   // Only as fallback (not recommended)
   
-  // Browser settings
+  // Playwright settings (when usePlaywright = true)
+  playwrightBrowser: 'chromium', // 'chromium' | 'firefox' | 'webkit'
+  playwrightHeadless: true,
+  playwrightWaitUntil: 'networkidle',
+  playwrightTimeout: 30000,
+  playwrightRemoveElements: ['script', 'style', 'noscript', 'iframe', 'svg', 'nav', 'footer', 'header', 'aside'],
+  playwrightWaitTime: 2000,    // Additional wait for JavaScript
+  
+  // Browser settings (when useOpenClawBrowser = true)
   headless: true,              // Browser headless mode
   waitTime: 5000,              // ms to wait for JavaScript
   profile: 'openclaw',         // Browser profile
@@ -444,6 +476,10 @@ await browser({
 - **`document-converter`**: Multi-format support
 - **`content-summarizer`**: Post-processing
 
+## 🚧 Future Improvements
+
+For planned features and improvements, see [TODO.md](TODO.md).
+
 ## 📝 License
 
 MIT - Use freely within OpenClaw.
@@ -467,8 +503,8 @@ For issues:
 
 **Skill Status**: ✅ Production Ready  
 **OpenClaw Version**: 2026.2.13+  
-**Browser Requirement**: OpenClaw browser enabled  
-**Dependencies**: turndown  
+**Browser Requirement**: Playwright (Chromium) required for SPAs; OpenClaw browser fallback  
+**Dependencies**: turndown, playwright  
 **Test Coverage**: 85%+
 
 ## 📞 Getting Help
