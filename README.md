@@ -13,6 +13,19 @@ cp -r dom-to-markdown ~/.openclaw/workspace/skills/
 
 The skill will be automatically loaded by OpenClaw.
 
+### Playwright Setup (Required for SPAs)
+
+For reliable JavaScript rendering of SPAs (React, Vue, Angular, Next.js, etc.), **Playwright is required**. Install it in the skill directory:
+
+```bash
+cd /home/jarvis/.openclaw/workspace/skills/dom-to-markdown
+npm install
+```
+
+This installs Playwright and Chromium (~150 MB). The skill will automatically detect if Playwright is available and use it as the primary method for SPAs.
+
+If Playwright is not installed, the skill will fall back to OpenClaw browser (less reliable) or `web_fetch` for static pages.
+
 ## 🚀 Quick Start
 
 ```javascript
@@ -39,7 +52,8 @@ if (result.success) {
 
 ### 🌐 Optimal Extraction
 - **Static pages**: Uses `web_fetch` for fast extraction
-- **SPAs**: Uses OpenClaw browser for JavaScript rendering
+- **SPAs**: Uses **Playwright (Chromium)** for reliable JavaScript rendering (primary method)
+- **Fallback**: OpenClaw browser for SPAs if Playwright not available
 - **Mixed pages**: Hybrid approach with fallbacks
 
 ### 📝 Clean Conversion
