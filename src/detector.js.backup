@@ -8,69 +8,36 @@ class PageTypeDetector {
     this.options = {
       debug: options.debug || false,
       minConfidence: options.minConfidence || 0.8, // Increased to avoid false positives
-      minSpaConfidence: options.minSpaConfidence || 0.7,
-      minStaticConfidence: options.minStaticConfidence || 0.8
+      minSpaConfidence: options.minSpaConfidence || 0.7
     };
     
     // Framework patterns
     this.frameworkPatterns = {
       react: [
-        { pattern: /window\\.React/i, weight: 0.8 },
+        { pattern: /react/i, weight: 0.8 },
         { pattern: /react-dom/i, weight: 0.9 },
         { pattern: /__NEXT_DATA__/i, weight: 0.7 },
         { pattern: /data-reactroot/i, weight: 0.8 },
-        { pattern: /createElement\(/i, weight: 0.3 },
-        { pattern: /React\\.createElement/i, weight: 0.7 },
-        { pattern: /___gatsby/i, weight: 0.7 },
-        { pattern: /gatsby-/i, weight: 0.5 },
-        { pattern: /data-gatsby/i, weight: 0.6 },
-        { pattern: /gatsby-image/i, weight: 0.5 },
-        { pattern: /Gatsby\\./i, weight: 0.6 },
-        { pattern: /data-framework=["']react["']/i, weight: 0.9 },
+        { pattern: /createElement\(/i, weight: 0.6 }
       ],
       vue: [
-        { pattern: /window\\.Vue/i, weight: 0.8 },
+        { pattern: /vue/i, weight: 0.8 },
         { pattern: /__VUE__/i, weight: 0.9 },
         { pattern: /vue-router/i, weight: 0.7 },
-        { pattern: /v-[\w-]+/i, weight: 0.3 },
-        { pattern: /@click\./i, weight: 0.3 },
-        { pattern: /data-v-[a-z0-9]/i, weight: 0.7 },
-        { pattern: /vue-docs-/i, weight: 0.5 },
-        { pattern: /vue_export-helper/i, weight: 0.6 },
-        { pattern: /createApp/i, weight: 0.7 },
-        { pattern: /Vue\\./i, weight: 0.6 },
-        { pattern: /vue@/i, weight: 0.5 },
-        { pattern: /vue-loader/i, weight: 0.5 },
-        { pattern: /vue-template/i, weight: 0.5 },
-        { pattern: /vue-cli/i, weight: 0.5 },
-        { pattern: /vuex/i, weight: 0.6 },
-        { pattern: /pinia/i, weight: 0.6 },
-        { pattern: /data-framework=["']vue["']/i, weight: 0.9 },
+        { pattern: /v-[\w-]+/i, weight: 0.6 },
+        { pattern: /@click\./i, weight: 0.5 }
       ],
       angular: [
-        { pattern: /ng-app/i, weight: 0.7 },
-        { pattern: /ng-controller/i, weight: 0.6 },
-        { pattern: /ng-model/i, weight: 0.6 },
-        { pattern: /ng-[\w-]+/i, weight: 0.2 },
-        { pattern: /angular\.module/i, weight: 0.8 },
-        { pattern: /angular\.bootstrap/i, weight: 0.7 },
-        { pattern: /window\\.angular/i, weight: 0.8 },
-        { pattern: /\[ng[\w-]+\]/i, weight: 0.3 },
-        { pattern: /\(click\)=/i, weight: 0.2 },
-        { pattern: /data-ng-/i, weight: 0.3 },
-        { pattern: /data-framework=["']angular["']/i, weight: 0.9 },
+        { pattern: /ng-[\w-]+/i, weight: 0.8 },
+        { pattern: /angular/i, weight: 0.7 },
+        { pattern: /\[ng[\w-]+\]/i, weight: 0.6 },
+        { pattern: /\(click\)=/i, weight: 0.5 }
       ],
       nextjs: [
-        { pattern: /_next/i, weight: 1.0 },
+        { pattern: /_next/i, weight: 0.9 },
         { pattern: /__NEXT_DATA__/i, weight: 1.0 },
         { pattern: /next\/router/i, weight: 0.7 },
-        { pattern: /next\/head/i, weight: 0.6 },
-        { pattern: /next\/script/i, weight: 0.6 },
-        { pattern: /next\/image/i, weight: 0.6 },
-        { pattern: /next\/link/i, weight: 0.6 },
-        { pattern: /next\/dynamic/i, weight: 0.5 },
-        { pattern: /next\//i, weight: 0.5 },
-        { pattern: /data-next-/i, weight: 0.6 }
+        { pattern: /next\/head/i, weight: 0.6 }
       ],
       nuxt: [
         { pattern: /_nuxt/i, weight: 0.9 },
@@ -78,20 +45,7 @@ class PageTypeDetector {
       ],
       svelte: [
         { pattern: /svelte/i, weight: 0.8 },
-        { pattern: /svelte-\w+/i, weight: 0.7 },
-        { pattern: /data-framework=["']svelte["']/i, weight: 0.9 },
-        { pattern: /data-svelte/i, weight: 0.8 },
-        { pattern: /class=["'][^"']*svelte-/i, weight: 0.6 },
-      ],
-      ember: [
-        { pattern: /ember\./i, weight: 0.8 },
-        { pattern: /Ember\./i, weight: 0.8 },
-        { pattern: /ember-/i, weight: 0.7 },
-        { pattern: /ember-data/i, weight: 0.7 },
-        { pattern: /ember-cli/i, weight: 0.6 },
-        { pattern: /ember\.js/i, weight: 0.5 },
-        { pattern: /data-framework=["']ember["']/i, weight: 0.9 },
-        { pattern: /data-ember-/i, weight: 0.6 }
+        { pattern: /svelte-\w+/i, weight: 0.7 }
       ]
     };
     
@@ -109,16 +63,13 @@ class PageTypeDetector {
       /admin\./i,
       /console\./i,
       /webapp\./i,
-      /singlepage\./i,
-      /meteor\./i
+      /singlepage\./i
     ];
     
     // Static content domains (likely static)
     this.staticDomains = [
       /docs\./i,
       /wiki\./i,
-      /wikipedia\./i,
-      /\.wikipedia\.org/i,
       /blog\./i,
       /news\./i,
       /article\./i,
@@ -205,8 +156,6 @@ class PageTypeDetector {
   classifyPage(html, frameworks = {}, url = '') {
     const htmlLength = html.length;
     const hasFrameworks = Object.keys(frameworks).length > 0;
-    const maxFrameworkConfidence = hasFrameworks ? Math.max(...Object.values(frameworks).map(f => f.confidence)) : 0;
-    const hasHighConfidenceFrameworks = maxFrameworkConfidence > 0.7;
     
     // Domain-based classification (strong signal)
     const isKnownSpa = url && this.isKnownSpaDomain(url);
@@ -227,102 +176,31 @@ class PageTypeDetector {
       { condition: /loading\.\.\.|loading spinner|loading indicator/i.test(html), weight: 0.5 },
       
       // Minimal content with script tags
-      { condition: (html.match(/<script/g) || []).length > 5 && htmlLength < 10000, weight: 0.4 },
-      
-      // Client-side hydration markers
-      { condition: /data-reactroot/i.test(html), weight: 0.8 },
-      { condition: /data-v-[a-z]/i.test(html), weight: 0.7 },
-      { condition: /data-ng-[a-z]/i.test(html), weight: 0.7 },
-      { condition: /_nextData/i.test(html), weight: 0.8 },
-      { condition: /__NUXT__/i.test(html), weight: 0.8 },
-      { condition: /__APOLLO_STATE__/i.test(html), weight: 0.7 },
-      { condition: /window\.__/i.test(html), weight: 0.3 },
-      { condition: /<script[^>]*src=["'][^"']*bundle/i.test(html), weight: 0.3 },
-      { condition: /<script[^>]*src=["'][^"']*app\./i.test(html), weight: 0.3 },
-      { condition: /<script[^>]*src=["'][^"']*runtime/i.test(html), weight: 0.5 },
-      
-      // Framework-specific root selectors
-      { condition: /<div[^>]*class=["'][^"']*app/i.test(html), weight: 0.4 },
-      { condition: /<div[^>]*class=["'][^"']*root/i.test(html), weight: 0.4 },
-      { condition: /<div[^>]*data-reactroot/i.test(html), weight: 0.8 },
-      // SSR SPA detection
-      { condition: hasFrameworks && htmlLength > 5000, weight: 0.6 },
-      // Framework script detection
-      { condition: /<script[^>]*src=["'][^"']*(react|vue|angular|next|nuxt|svelte)/i.test(html), weight: 0.7 },
-      { condition: /window\.(React|Vue|Angular|next|nuxt)/i.test(html), weight: 0.3 }
+      { condition: (html.match(/<script/g) || []).length > 5 && htmlLength < 10000, weight: 0.4 }
     ];
     
     for (const { condition, weight } of spaIndicators) {
-      if (condition) {
-        spaScore += weight;
-        if (this.options.debug) {
-          this.log(`SPA indicator matched: ${condition.toString()} (+${weight})`);
-        }
-      }
-    }
-    
-    // Boost SPA score based on framework confidence
-    if (hasHighConfidenceFrameworks) {
-      // Add up to 0.2 based on confidence
-      const frameworkBoost = maxFrameworkConfidence * 0.2;
-      spaScore += frameworkBoost;
-      if (this.options.debug) {
-        this.log(`Framework boost: ${maxFrameworkConfidence} * 0.2 = +${frameworkBoost}`);
-      }
-    }
-    // Small boost for any framework detection (helps tie-breaking)
-    if (hasFrameworks && !hasHighConfidenceFrameworks) {
-      const smallBoost = 0.05;
-      spaScore += smallBoost;
-      if (this.options.debug) {
-        this.log(`Framework presence boost: +${smallBoost}`);
-      }
+      if (condition) spaScore += weight;
     }
     
     // Calculate static indicators
     let staticScore = 0;
-    const scriptCount = (html.match(/<script/g) || []).length;
-    const hasSpaMarkers = /data-reactroot|data-v-[a-z]|data-ng-[a-z]|_nextData|__NUXT__|__APOLLO_STATE__/i.test(html);
-    
     const staticIndicators = [
-      // Long HTML without frameworks (less weight if frameworks present)
+      // Long HTML without frameworks
       { condition: htmlLength > 15000 && !hasFrameworks, weight: 0.8 },
-      { condition: htmlLength > 15000 && hasFrameworks, weight: 0.2 }, // reduced weight
-      
-      // Large HTML with low-confidence frameworks (likely static)
-      { condition: htmlLength > 50000 && hasFrameworks && maxFrameworkConfidence < 0.7, weight: 0.4 },
       
       // Server-rendered patterns
       { condition: /<article>|<section>|<main>/i.test(html), weight: 0.3 },
-      { condition: /<header>|<footer>|<nav>|<aside>/i.test(html), weight: 0.2 },
-      { condition: /<h[1-6][^>]*>/i.test(html), weight: 0.3 },
-      { condition: /<p[^>]*>/i.test(html), weight: 0.3 },
-      { condition: (html.match(/<h[1-6][^>]*>/g) || []).length > 1, weight: 0.2 },
+      { condition: /<h[1-6][^>]*>/i.test(html), weight: 0.2 },
+      { condition: /<p[^>]*>/i.test(html), weight: 0.2 },
       
       // Traditional web patterns
       { condition: /<table[^>]*>/i.test(html), weight: 0.2 },
-      { condition: /<form[^>]*>/i.test(html), weight: 0.2 },
-      
-      // Content-heavy patterns
-      { condition: (html.match(/<p[^>]*>/g) || []).length > 10, weight: 0.3 },
-      
-      // Low script count (static pages often have few scripts)
-      { condition: scriptCount < 2, weight: 0.3 },
-      
-      // No SPA markers
-      { condition: !hasSpaMarkers, weight: 0.2 },
-      
-      // No framework detection
-      { condition: !hasFrameworks, weight: 0.2 }
+      { condition: /<form[^>]*>/i.test(html), weight: 0.2 }
     ];
     
     for (const { condition, weight } of staticIndicators) {
-      if (condition) {
-        staticScore += weight;
-        if (this.options.debug) {
-          this.log(`Static indicator matched: ${condition.toString()} (+${weight})`);
-        }
-      }
+      if (condition) staticScore += weight;
     }
     
     // Domain-based boosting (strong signal)
@@ -343,43 +221,10 @@ class PageTypeDetector {
     let type = 'mixed';
     let confidence = 0.5;
     
-    // Helper: check if SPA should win (including tie-breaking)
-    const epsilon = 0.01;
-    const spaWins = () => {
-      if (spaScore < this.options.minSpaConfidence) return false;
-      if (spaScore > staticScore + epsilon) return true;
-      if (Math.abs(spaScore - staticScore) <= epsilon) {
-        // Tie: prefer SPA if high-confidence frameworks detected, else static
-        return hasHighConfidenceFrameworks;
-      }
-      return false;
-    };
-    
-    // Helper: static wins
-    const staticWins = () => {
-      if (staticScore < this.options.minStaticConfidence) return false;
-      if (staticScore > spaScore + epsilon) return true;
-      if (Math.abs(staticScore - spaScore) <= epsilon) {
-        // Tie: prefer static if no high-confidence frameworks, else SPA (already handled)
-        return !hasHighConfidenceFrameworks;
-      }
-      return false;
-    };
-    
-    // Domain bias: known domains strongly influence classification
-    // unless the opposite score is significantly higher (>0.2)
-    if (isKnownStatic && !isKnownSpa && staticScore >= spaScore - 0.2) {
-      // Known static domain, not a known SPA domain, and static score not too far behind
-      type = 'static';
-      confidence = staticScore;
-    } else if (isKnownSpa && !isKnownStatic && spaScore >= staticScore - 0.2) {
-      // Known SPA domain, not a known static domain, and SPA score not too far behind
+    if (spaScore > this.options.minSpaConfidence && spaScore > staticScore) {
       type = 'spa';
       confidence = spaScore;
-    } else if (spaWins()) {
-      type = 'spa';
-      confidence = spaScore;
-    } else if (staticWins()) {
+    } else if (staticScore > this.options.minSpaConfidence && staticScore > spaScore) {
       type = 'static';
       confidence = staticScore;
     } else {
@@ -389,7 +234,10 @@ class PageTypeDetector {
     }
     
     // Adjust confidence based on framework detection
-    if (type === 'spa' && hasHighConfidenceFrameworks) {
+    if (type === 'spa' && hasFrameworks) {
+      const maxFrameworkConfidence = Math.max(
+        ...Object.values(frameworks).map(f => f.confidence)
+      );
       confidence = Math.max(confidence, maxFrameworkConfidence);
     }
     

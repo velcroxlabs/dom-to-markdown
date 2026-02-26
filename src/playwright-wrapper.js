@@ -34,6 +34,10 @@ class PlaywrightWrapper {
         'nav', 'footer', 'header', 'aside'
       ],
       
+      // Authentication
+      cookies: options.cookies || [],
+      headers: options.headers || {},
+      
       // Extraction priority
       preferMainContent: options.preferMainContent !== false,
       
@@ -178,6 +182,25 @@ class PlaywrightWrapper {
       
       // Set viewport to desktop size
       await this.page.setViewportSize({ width: 1280, height: 720 });
+      
+      // Apply authentication cookies and headers if provided
+      if (this.options.cookies && this.options.cookies.length > 0) {
+        this.log(`Adding ${this.options.cookies.length} cookies to browser context`);
+        try {
+          await this.page.context().addCookies(this.options.cookies);
+        } catch (cookieError) {
+          this.log(`Warning: Failed to add cookies: ${cookieError.message}`);
+        }
+      }
+      
+      if (this.options.headers && Object.keys(this.options.headers).length > 0) {
+        this.log(`Setting extra HTTP headers`);
+        try {
+          await this.page.setExtraHTTPHeaders(this.options.headers);
+        } catch (headersError) {
+          this.log(`Warning: Failed to set headers: ${headersError.message}`);
+        }
+      }
       
       this.log('Page created');
     } catch (error) {

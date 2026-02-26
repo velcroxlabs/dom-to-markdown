@@ -1,0 +1,289 @@
+{
+  "timestamp": "2026-02-25T13:03:02.289Z",
+  "sites": [
+    {
+      "url": "https://react.dev/",
+      "name": "React"
+    },
+    {
+      "url": "https://vuejs.org/",
+      "name": "Vue"
+    },
+    {
+      "url": "https://angular.io/",
+      "name": "Angular"
+    },
+    {
+      "url": "https://nextjs.org/",
+      "name": "Next.js"
+    },
+    {
+      "url": "https://nuxt.com/",
+      "name": "Nuxt"
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/JavaScript",
+      "name": "Wikipedia"
+    }
+  ],
+  "results": [
+    {
+      "site": "React",
+      "url": "https://react.dev/",
+      "success": true,
+      "classification": {
+        "type": "mixed",
+        "confidence": 0.3,
+        "frameworks": {
+          "react": {
+            "confidence": 1,
+            "matches": [
+              "/react/i",
+              "/react-dom/i",
+              "/__NEXT_DATA__/i"
+            ]
+          },
+          "vue": {
+            "confidence": 0.6,
+            "matches": [
+              "/v-[\\w-]+/i"
+            ]
+          },
+          "angular": {
+            "confidence": 0.8,
+            "matches": [
+              "/ng-[\\w-]+/i"
+            ]
+          },
+          "nextjs": {
+            "confidence": 1,
+            "matches": [
+              "/_next/i",
+              "/__NEXT_DATA__/i"
+            ]
+          }
+        },
+        "metrics": {
+          "htmlLength": 272442,
+          "spaScore": 0,
+          "staticScore": 0.6,
+          "hasFrameworks": true
+        }
+      },
+      "htmlLength": 272442,
+      "duration": 1235
+    },
+    {
+      "site": "Vue",
+      "url": "https://vuejs.org/",
+      "success": true,
+      "classification": {
+        "type": "mixed",
+        "confidence": 0.65,
+        "frameworks": {
+          "react": {
+            "confidence": 0.8,
+            "matches": [
+              "/react/i"
+            ]
+          },
+          "vue": {
+            "confidence": 1,
+            "matches": [
+              "/vue/i",
+              "/v-[\\w-]+/i"
+            ]
+          },
+          "angular": {
+            "confidence": 0.8,
+            "matches": [
+              "/ng-[\\w-]+/i"
+            ]
+          }
+        },
+        "metrics": {
+          "htmlLength": 81258,
+          "spaScore": 0.6,
+          "staticScore": 0.7,
+          "hasFrameworks": true
+        }
+      },
+      "htmlLength": 81258,
+      "duration": 417
+    },
+    {
+      "site": "Angular",
+      "url": "https://angular.io/",
+      "success": true,
+      "classification": {
+        "type": "mixed",
+        "confidence": 0.2,
+        "frameworks": {
+          "react": {
+            "confidence": 0.8,
+            "matches": [
+              "/react/i"
+            ]
+          },
+          "vue": {
+            "confidence": 0.6,
+            "matches": [
+              "/v-[\\w-]+/i"
+            ]
+          },
+          "angular": {
+            "confidence": 1,
+            "matches": [
+              "/ng-[\\w-]+/i",
+              "/angular/i",
+              "/\\[ng[\\w-]+\\]/i"
+            ]
+          }
+        },
+        "metrics": {
+          "htmlLength": 97352,
+          "spaScore": 0,
+          "staticScore": 0.4,
+          "hasFrameworks": true
+        }
+      },
+      "htmlLength": 97352,
+      "duration": 1023
+    },
+    {
+      "site": "Next.js",
+      "url": "https://nextjs.org/",
+      "success": true,
+      "classification": {
+        "type": "static",
+        "confidence": 0.9,
+        "frameworks": {
+          "react": {
+            "confidence": 0.8,
+            "matches": [
+              "/react/i"
+            ]
+          },
+          "vue": {
+            "confidence": 0.6,
+            "matches": [
+              "/v-[\\w-]+/i"
+            ]
+          },
+          "angular": {
+            "confidence": 1,
+            "matches": [
+              "/ng-[\\w-]+/i",
+              "/angular/i"
+            ]
+          },
+          "nextjs": {
+            "confidence": 0.9,
+            "matches": [
+              "/_next/i"
+            ]
+          }
+        },
+        "metrics": {
+          "htmlLength": 298795,
+          "spaScore": 0,
+          "staticScore": 0.9,
+          "hasFrameworks": true
+        }
+      },
+      "htmlLength": 298795,
+      "duration": 441
+    },
+    {
+      "site": "Nuxt",
+      "url": "https://nuxt.com/",
+      "success": true,
+      "classification": {
+        "type": "static",
+        "confidence": 0.8,
+        "frameworks": {
+          "react": {
+            "confidence": 0.8,
+            "matches": [
+              "/react/i"
+            ]
+          },
+          "vue": {
+            "confidence": 1,
+            "matches": [
+              "/vue/i",
+              "/v-[\\w-]+/i"
+            ]
+          },
+          "angular": {
+            "confidence": 0.8,
+            "matches": [
+              "/ng-[\\w-]+/i"
+            ]
+          },
+          "nuxt": {
+            "confidence": 1,
+            "matches": [
+              "/_nuxt/i",
+              "/__NUXT__/i"
+            ]
+          }
+        },
+        "metrics": {
+          "htmlLength": 302935,
+          "spaScore": 0,
+          "staticScore": 0.8,
+          "hasFrameworks": true
+        }
+      },
+      "htmlLength": 302935,
+      "duration": 409
+    },
+    {
+      "site": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/JavaScript",
+      "success": true,
+      "classification": {
+        "type": "static",
+        "confidence": 0.8,
+        "frameworks": {
+          "react": {
+            "confidence": 0.8,
+            "matches": [
+              "/react/i"
+            ]
+          },
+          "vue": {
+            "confidence": 1,
+            "matches": [
+              "/vue/i",
+              "/v-[\\w-]+/i"
+            ]
+          },
+          "angular": {
+            "confidence": 1,
+            "matches": [
+              "/ng-[\\w-]+/i",
+              "/angular/i"
+            ]
+          }
+        },
+        "metrics": {
+          "htmlLength": 455824,
+          "spaScore": 0,
+          "staticScore": 0.8,
+          "hasFrameworks": true
+        }
+      },
+      "htmlLength": 455824,
+      "duration": 509
+    }
+  ],
+  "summary": {
+    "total": 6,
+    "successful": 6,
+    "failed": 0,
+    "spaDetectionAccuracy": "0/5",
+    "staticDetectionAccuracy": "1/1"
+  }
+}

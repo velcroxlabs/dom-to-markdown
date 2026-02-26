@@ -1,0 +1,263 @@
+{
+  "timestamp": "2026-02-25T14:45:34.618Z",
+  "sites": [
+    {
+      "url": "https://svelte.dev/",
+      "name": "Svelte",
+      "expectedType": "spa"
+    },
+    {
+      "url": "https://gatsbyjs.com/",
+      "name": "Gatsby",
+      "expectedType": "spa"
+    },
+    {
+      "url": "https://emberjs.com/",
+      "name": "Ember",
+      "expectedType": "spa"
+    },
+    {
+      "url": "https://alpinejs.dev/",
+      "name": "Alpine",
+      "expectedType": "static"
+    },
+    {
+      "url": "https://meteor.com/",
+      "name": "Meteor",
+      "expectedType": "spa"
+    },
+    {
+      "url": "https://www.nginx.com/",
+      "name": "Nginx",
+      "expectedType": "static"
+    }
+  ],
+  "results": [
+    {
+      "site": "Svelte",
+      "url": "https://svelte.dev/",
+      "success": true,
+      "classification": {
+        "type": "spa",
+        "confidence": 1,
+        "frameworks": {
+          "react": {
+            "confidence": 0.3,
+            "matches": [
+              "/createElement\\(/i"
+            ]
+          },
+          "vue": {
+            "confidence": 0.3,
+            "matches": [
+              "/v-[\\w-]+/i"
+            ]
+          },
+          "angular": {
+            "confidence": 0.2,
+            "matches": [
+              "/ng-[\\w-]+/i"
+            ]
+          },
+          "svelte": {
+            "confidence": 1,
+            "matches": [
+              "/svelte/i",
+              "/svelte-\\w+/i"
+            ]
+          }
+        },
+        "metrics": {
+          "htmlLength": 90391,
+          "spaScore": 1,
+          "staticScore": 1,
+          "hasFrameworks": true
+        }
+      },
+      "htmlLength": 90391,
+      "duration": 2735,
+      "correct": true
+    },
+    {
+      "site": "Gatsby",
+      "url": "https://gatsbyjs.com/",
+      "success": true,
+      "classification": {
+        "type": "spa",
+        "confidence": 1,
+        "frameworks": {
+          "react": {
+            "confidence": 1,
+            "matches": [
+              "/createElement\\(/i",
+              "/___gatsby/i",
+              "/gatsby-/i",
+              "/data-gatsby/i",
+              "/gatsby-image/i"
+            ]
+          },
+          "vue": {
+            "confidence": 0.3,
+            "matches": [
+              "/v-[\\w-]+/i"
+            ]
+          },
+          "angular": {
+            "confidence": 0.2,
+            "matches": [
+              "/ng-[\\w-]+/i"
+            ]
+          }
+        },
+        "metrics": {
+          "htmlLength": 207108,
+          "spaScore": 1,
+          "staticScore": 1,
+          "hasFrameworks": true
+        }
+      },
+      "htmlLength": 207108,
+      "duration": 713,
+      "correct": true
+    },
+    {
+      "site": "Ember",
+      "url": "https://emberjs.com/",
+      "success": true,
+      "classification": {
+        "type": "spa",
+        "confidence": 1,
+        "frameworks": {
+          "vue": {
+            "confidence": 0.3,
+            "matches": [
+              "/v-[\\w-]+/i"
+            ]
+          },
+          "angular": {
+            "confidence": 0.2,
+            "matches": [
+              "/ng-[\\w-]+/i"
+            ]
+          },
+          "ember": {
+            "confidence": 1,
+            "matches": [
+              "/ember\\./i",
+              "/Ember\\./i",
+              "/ember-/i",
+              "/ember-data/i",
+              "/ember-cli/i",
+              "/ember\\.js/i"
+            ]
+          }
+        },
+        "metrics": {
+          "htmlLength": 134673,
+          "spaScore": 1,
+          "staticScore": 1,
+          "hasFrameworks": true
+        }
+      },
+      "htmlLength": 134673,
+      "duration": 369,
+      "correct": true
+    },
+    {
+      "site": "Alpine",
+      "url": "https://alpinejs.dev/",
+      "success": true,
+      "classification": {
+        "type": "static",
+        "confidence": 0.9,
+        "frameworks": {
+          "angular": {
+            "confidence": 0.2,
+            "matches": [
+              "/ng-[\\w-]+/i"
+            ]
+          }
+        },
+        "metrics": {
+          "htmlLength": 46271,
+          "spaScore": 0.65,
+          "staticScore": 0.9,
+          "hasFrameworks": true
+        }
+      },
+      "htmlLength": 46271,
+      "duration": 475,
+      "correct": true
+    },
+    {
+      "site": "Meteor",
+      "url": "https://meteor.com/",
+      "success": true,
+      "classification": {
+        "type": "spa",
+        "confidence": 0.5,
+        "frameworks": {},
+        "metrics": {
+          "htmlLength": 4346,
+          "spaScore": 0.5,
+          "staticScore": 0,
+          "hasFrameworks": false
+        }
+      },
+      "htmlLength": 4346,
+      "duration": 728,
+      "correct": true
+    },
+    {
+      "site": "Nginx",
+      "url": "https://www.nginx.com/",
+      "success": true,
+      "classification": {
+        "type": "spa",
+        "confidence": 1,
+        "frameworks": {
+          "react": {
+            "confidence": 0.3,
+            "matches": [
+              "/createElement\\(/i"
+            ]
+          },
+          "vue": {
+            "confidence": 0.3,
+            "matches": [
+              "/v-[\\w-]+/i"
+            ]
+          },
+          "angular": {
+            "confidence": 0.2,
+            "matches": [
+              "/ng-[\\w-]+/i"
+            ]
+          },
+          "nextjs": {
+            "confidence": 0.5,
+            "matches": [
+              "/_next/i"
+            ]
+          }
+        },
+        "metrics": {
+          "htmlLength": 344469,
+          "spaScore": 1,
+          "staticScore": 0.9,
+          "hasFrameworks": true
+        }
+      },
+      "htmlLength": 344469,
+      "duration": 1335,
+      "correct": false
+    }
+  ],
+  "summary": {
+    "total": 6,
+    "successful": 6,
+    "failed": 0,
+    "correct": 5,
+    "incorrect": 1
+  }
+}

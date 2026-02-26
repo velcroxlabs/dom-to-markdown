@@ -1,0 +1,260 @@
+{
+  "timestamp": "2026-02-25T14:24:09.318Z",
+  "sites": [
+    {
+      "url": "https://react.dev/",
+      "name": "React"
+    },
+    {
+      "url": "https://vuejs.org/",
+      "name": "Vue"
+    },
+    {
+      "url": "https://angular.io/",
+      "name": "Angular"
+    },
+    {
+      "url": "https://nextjs.org/",
+      "name": "Next.js"
+    },
+    {
+      "url": "https://nuxt.com/",
+      "name": "Nuxt"
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/JavaScript",
+      "name": "Wikipedia"
+    }
+  ],
+  "results": [
+    {
+      "site": "React",
+      "url": "https://react.dev/",
+      "success": true,
+      "classification": {
+        "type": "spa",
+        "confidence": 1,
+        "frameworks": {
+          "react": {
+            "confidence": 1,
+            "matches": [
+              "/react-dom/i",
+              "/__NEXT_DATA__/i"
+            ]
+          },
+          "vue": {
+            "confidence": 0.6,
+            "matches": [
+              "/v-[\\w-]+/i"
+            ]
+          },
+          "angular": {
+            "confidence": 0.4,
+            "matches": [
+              "/ng-[\\w-]+/i"
+            ]
+          },
+          "nextjs": {
+            "confidence": 1,
+            "matches": [
+              "/_next/i",
+              "/__NEXT_DATA__/i"
+            ]
+          }
+        },
+        "metrics": {
+          "htmlLength": 272442,
+          "spaScore": 1,
+          "staticScore": 1,
+          "hasFrameworks": true
+        }
+      },
+      "htmlLength": 272442,
+      "duration": 983
+    },
+    {
+      "site": "Vue",
+      "url": "https://vuejs.org/",
+      "success": true,
+      "classification": {
+        "type": "spa",
+        "confidence": 1,
+        "frameworks": {
+          "vue": {
+            "confidence": 1,
+            "matches": [
+              "/v-[\\w-]+/i",
+              "/data-v-[a-z0-9]/i",
+              "/vue-docs-/i",
+              "/vue_export-helper/i",
+              "/Vue\\\\./i",
+              "/pinia/i"
+            ]
+          },
+          "angular": {
+            "confidence": 0.4,
+            "matches": [
+              "/ng-[\\w-]+/i"
+            ]
+          }
+        },
+        "metrics": {
+          "htmlLength": 81258,
+          "spaScore": 1,
+          "staticScore": 1,
+          "hasFrameworks": true
+        }
+      },
+      "htmlLength": 81258,
+      "duration": 347
+    },
+    {
+      "site": "Angular",
+      "url": "https://angular.io/",
+      "success": true,
+      "classification": {
+        "type": "spa",
+        "confidence": 1,
+        "frameworks": {
+          "vue": {
+            "confidence": 0.6,
+            "matches": [
+              "/v-[\\w-]+/i"
+            ]
+          },
+          "angular": {
+            "confidence": 1,
+            "matches": [
+              "/ng-app/i",
+              "/ng-[\\w-]+/i",
+              "/\\[ng[\\w-]+\\]/i"
+            ]
+          }
+        },
+        "metrics": {
+          "htmlLength": 97352,
+          "spaScore": 1,
+          "staticScore": 0.9,
+          "hasFrameworks": true
+        }
+      },
+      "htmlLength": 97352,
+      "duration": 907
+    },
+    {
+      "site": "Next.js",
+      "url": "https://nextjs.org/",
+      "success": true,
+      "classification": {
+        "type": "spa",
+        "confidence": 1,
+        "frameworks": {
+          "vue": {
+            "confidence": 0.6,
+            "matches": [
+              "/v-[\\w-]+/i"
+            ]
+          },
+          "angular": {
+            "confidence": 0.4,
+            "matches": [
+              "/ng-[\\w-]+/i"
+            ]
+          },
+          "nextjs": {
+            "confidence": 0.9,
+            "matches": [
+              "/_next/i"
+            ]
+          }
+        },
+        "metrics": {
+          "htmlLength": 298795,
+          "spaScore": 1,
+          "staticScore": 1,
+          "hasFrameworks": true
+        }
+      },
+      "htmlLength": 298795,
+      "duration": 744
+    },
+    {
+      "site": "Nuxt",
+      "url": "https://nuxt.com/",
+      "success": true,
+      "classification": {
+        "type": "spa",
+        "confidence": 1,
+        "frameworks": {
+          "vue": {
+            "confidence": 1,
+            "matches": [
+              "/v-[\\w-]+/i",
+              "/data-v-[a-z0-9]/i"
+            ]
+          },
+          "angular": {
+            "confidence": 0.4,
+            "matches": [
+              "/ng-[\\w-]+/i"
+            ]
+          },
+          "nuxt": {
+            "confidence": 1,
+            "matches": [
+              "/_nuxt/i",
+              "/__NUXT__/i"
+            ]
+          }
+        },
+        "metrics": {
+          "htmlLength": 302935,
+          "spaScore": 1,
+          "staticScore": 1,
+          "hasFrameworks": true
+        }
+      },
+      "htmlLength": 302935,
+      "duration": 413
+    },
+    {
+      "site": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/JavaScript",
+      "success": true,
+      "classification": {
+        "type": "static",
+        "confidence": 1,
+        "frameworks": {
+          "vue": {
+            "confidence": 0.6,
+            "matches": [
+              "/v-[\\w-]+/i"
+            ]
+          },
+          "angular": {
+            "confidence": 1,
+            "matches": [
+              "/ng-app/i",
+              "/ng-[\\w-]+/i"
+            ]
+          }
+        },
+        "metrics": {
+          "htmlLength": 455824,
+          "spaScore": 1,
+          "staticScore": 1,
+          "hasFrameworks": true
+        }
+      },
+      "htmlLength": 455824,
+      "duration": 522
+    }
+  ],
+  "summary": {
+    "total": 6,
+    "successful": 6,
+    "failed": 0,
+    "spaDetectionAccuracy": "5/5",
+    "staticDetectionAccuracy": "1/1"
+  }
+}

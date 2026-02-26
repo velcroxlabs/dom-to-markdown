@@ -14,7 +14,9 @@ class OpenClawBrowserWrapper {
       timeout: options.timeout || 30,
       waitForLoad: options.waitForLoad || 'networkidle',
       waitTime: options.waitTime || 5000,
-      debug: options.debug || false
+      debug: options.debug || false,
+      cookies: options.cookies || [],
+      headers: options.headers || {}
     };
     
     // Browser tool is assumed to be available in OpenClaw agent context
@@ -28,6 +30,57 @@ class OpenClawBrowserWrapper {
   isBrowserToolAvailable() {
     // In OpenClaw agent context, 'browser' is a function
     return typeof browser === 'function';
+  }
+  
+  /**
+   * Apply authentication cookies and headers if configured
+   */
+  async applyAuthentication() {
+    if (!this.isBrowserToolAvailable()) {
+      return;
+    }
+    
+    // Apply cookies if any
+    if (this.options.cookies && this.options.cookies.length > 0) {
+      try {
+        // Try to set cookies via browser tool
+        await browser({
+          action: 'cookies',
+          method: 'set',
+          cookies: this.options.cookies,
+          profile: this.options.profile
+        });
+        if (this.options.debug) {
+          console.log(`Set ${this.options.cookies.length} cookies via browser tool`);
+        }
+      } catch (error) {
+        if (this.options.debug) {
+          console.log(`Failed to set cookies via browser tool: ${error.message}`);
+        }
+        // Non-fatal, continue
+      }
+    }
+    
+    // Apply headers if any
+    if (this.options.headers && Object.keys(this.options.headers).length > 0) {
+      try {
+        // Try to set extra HTTP headers via browser tool
+        await browser({
+          action: 'set',
+          kind: 'headers',
+          headers: this.options.headers,
+          profile: this.options.profile
+        });
+        if (this.options.debug) {
+          console.log(`Set extra HTTP headers via browser tool: ${Object.keys(this.options.headers).join(', ')}`);
+        }
+      } catch (error) {
+        if (this.options.debug) {
+          console.log(`Failed to set headers via browser tool: ${error.message}`);
+        }
+        // Non-fatal, continue
+      }
+    }
   }
   
   /**
@@ -128,6 +181,7 @@ class OpenClawBrowserWrapper {
    */
   async navigateToUrl(url) {
     await this.ensureBrowserRunning();
+    await this.applyAuthentication();
     
     if (this.options.debug) {
       console.log(`Navigating to: ${url}`);
